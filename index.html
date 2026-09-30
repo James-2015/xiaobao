@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园平台</title>
+    <style>
+        body { font-family: sans-serif; background: #f5f6fa; margin: 0; padding: 20px; }
+        #loginBox { background: #fff; max-width: 350px; margin: 100px auto; padding: 30px; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        #loginBox input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        #loginBox button { width: 95%; padding: 12px; background: #4a90e2; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        #mainApp { display: none; max-width: 800px; margin: 0 auto; }
+        .header { background: #fff; padding: 15px; display: flex; justify-content: space-between; border-radius: 8px 8px 0 0; border-bottom: 1px solid #ddd; }
+        .header button { padding: 8px 15px; border: none; background: #e74c3c; color: white; border-radius: 5px; cursor: pointer; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #ddd; border: 1px solid #ddd; border-radius: 0 0 8px 8px; overflow: hidden; }
+        .icon { background: #fff; padding: 25px; text-align: center; cursor: pointer; border: 1px solid #eee; transition: 0.2s; }
+        .icon:hover { background: #f9fbff; }
+        .circle { width: 60px; height: 60px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; color: white; margin-bottom: 10px; }
+        
+        .yellow { background: #f9ba48; } .blue { background: #4a90e2; } .green { background: #57c9b8; } 
+        .orange { background: #e88f6a; } .brown { background: #d9836b; } .deepblue { background: #3b7dd8; }
+
+        .page { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f5f6fa; z-index: 1000; overflow-y: auto; }
+        .page-header { background: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
+        .page-header button { padding: 8px 15px; border: none; background: #ddd; border-radius: 5px; cursor: pointer; }
+        
+        .full-screen-banner { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0d17; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
+        .big-text { font-size: 5rem; font-weight: 900; text-align: center; margin-bottom: 30px; padding: 0 20px; }
+        .text-success { color: #f9ba48; } .text-error { color: #f53f3f; }
+        .back-btn { padding: 15px 40px; background: white; color: black; border: none; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+        .task-card { background: #fff; margin: 15px; padding: 20px; border-radius: 8px; border: 1px solid #eee; }
+        .task-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .task-status { font-size: 24px; margin-right: 10px; }
+        .input-group { display: flex; gap: 10px; }
+        .input-group input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        .input-group button { padding: 10px 20px; background: #4a90e2; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        
+        .admin-btns { margin-top: 10px; text-align: right; }
+        .admin-btns button { margin-left: 10px; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-edit { background: #f0f0f0; } .btn-del { background: #ffe6e6; color: red; }
+        
+        .create-box { background: #fff; margin: 15px; padding: 20px; border-radius: 8px; display: none; }
+        .create-box input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
+        .create-box button { width: 100%; padding: 12px; background: #57c9b8; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        
+        .gpa-box { text-align: center; padding: 50px; background: white; margin: 20px; border-radius: 20px; }
+        .gpa-num { font-size: 80px; font-weight: bold; }
+
+        .grade-section { background: #fff; margin: 15px; padding: 20px; border-radius: 8px; }
+        .grade-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 15px 0; }
+        .grade-row:last-child { border-bottom: none; }
+        .grade-score { font-weight: bold; font-size: 22px; }
+        .score-1 { color: green; } .score-0 { color: red; }
+
+        .notice-content { font-size: 16px; line-height: 1.6; white-space: pre-wrap; }
+        .notice-meta { font-size: 12px; color: #999; margin-top: 8px; }
+
+        .report-card { background: #fff; margin: 15px; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
+        .report-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #333; }
+        .report-rate { font-size: 70px; font-weight: 900; margin: 10px 0; }
+        .report-task .report-rate { color: #4a90e2; } .report-exam .report-rate { color: #57c9b8; }
+        .report-detail { color: #666; font-size: 15px; margin-top: 10px; }
+        .progress-bar { background: #eee; border-radius: 10px; height: 12px; margin-top: 15px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 10px; transition: width 0.5s; }
+        .fill-task { background: #4a90e2; } .fill-exam { background: #57c9b8; }
+
+        .pay-section-title { font-size: 18px; font-weight: bold; margin: 20px 15px 10px 15px; color: #333; }
+        .pay-item { background: #fff; margin: 0 15px 15px 15px; padding: 18px 20px; border-radius: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .pay-item-content { font-size: 16px; flex: 1; min-width: 120px; }
+        .pay-item-amount { font-size: 20px; font-weight: bold; color: #e74c3c; }
+        .pay-item-amount span { font-size: 13px; color: #999; font-weight: normal; }
+        .pay-btn { padding: 8px 18px; background: #57c9b8; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 15px; }
+        .pay-btn:hover { background: #45b0a1; }
+        .paid-badge { padding: 8px 18px; background: #e8f8f5; color: #2a9d8f; border: 1px solid #a9e2d8; border-radius: 5px; font-weight: bold; font-size: 14px; }
+
+        .member-item { background: #fff; margin: 0 15px 15px 15px; padding: 18px 20px; border-radius: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .member-name { font-size: 16px; font-weight: bold; }
+        .member-balance { font-size: 18px; font-weight: bold; color: #57c9b8; margin-left: 15px; }
+        .member-balance span { font-size: 13px; color: #999; font-weight: normal; }
+        .self-mark { font-size: 12px; background: #4a90e2; color: white; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+
+        .overall-box { text-align: center; padding: 60px 30px; background: linear-gradient(135deg, #667eea, #764ba2); margin: 20px; border-radius: 20px; color: white; }
+        .overall-label { font-size: 18px; opacity: 0.9; margin-bottom: 10px; }
+        .overall-num { font-size: 90px; font-weight: 900; margin: 10px 0; }
+        .overall-formula { font-size: 14px; opacity: 0.85; margin-top: 15px; }
+        .overall-detail { background: #fff; margin: 20px; padding: 20px; border-radius: 12px; color: #333; font-size: 15px; line-height: 1.8; }
+        .overall-detail .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+        .overall-detail .detail-row:last-child { border-bottom: none; }
+
+        .attendance-rate-box { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #4a90e2, #57c9b8); margin: 20px; border-radius: 20px; color: white; }
+        .attendance-rate-label { font-size: 16px; opacity: 0.9; margin-bottom: 10px; }
+        .attendance-rate-num { font-size: 70px; font-weight: 900; margin: 5px 0; }
+        .attendance-rate-detail { font-size: 14px; opacity: 0.9; margin-top: 10px; }
+        
+        .checkin-card { background: #fff; margin: 20px; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
+        .checkin-date { color: #888; font-size: 15px; margin-bottom: 20px; }
+        .checkin-btn { padding: 18px 60px; background: #4a90e2; color: white; border: none; border-radius: 50px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(74,144,226,0.4); transition: all 0.2s; }
+        .checkin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(74,144,226,0.5); }
+        .checked-badge { display: inline-block; padding: 18px 60px; background: #e8f8f5; color: #2a9d8f; border: 2px solid #a9e2d8; border-radius: 50px; font-size: 18px; font-weight: bold; }
+        .no-attendance { background: #fff; margin: 20px; padding: 40px; border-radius: 12px; text-align: center; color: #888; }
+        
+        .attendance-list-item { background: #fff; margin: 0 15px 15px 15px; padding: 15px 20px; border-radius: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .attendance-date { font-size: 16px; font-weight: bold; color: #333; }
+        .attendance-status { font-size: 14px; padding: 4px 12px; border-radius: 12px; }
+        .status-checked { background: #e8f8f5; color: #2a9d8f; }
+        .status-missing { background: #ffe6e6; color: #d32f2f; }
+
+        .user-item { background: #fff; margin: 0 15px 15px 15px; padding: 15px 20px; border-radius: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .user-name { font-size: 16px; font-weight: bold; }
+        .user-tag { font-size: 11px; background: #4a90e2; color: white; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+        .user-tag-admin { background: #f9ba48; }
+
+        #customDialog { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
+        #customDialog .dlg-box { background: white; padding: 25px; border-radius: 10px; max-width: 320px; width: 85%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        #customDialog .dlg-msg { margin-bottom: 15px; font-size: 16px; color: #333; line-height: 1.5; word-break: break-word; }
+        #customDialog .dlg-input { display: none; width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
+        #customDialog .dlg-btns { display: flex; gap: 10px; }
+        #customDialog .dlg-btns button { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 15px; }
+        #customDialog .btn-ok { background: #4a90e2; color: white; }
+        #customDialog .btn-cancel { background: #ddd; color: #333; }
+
+        #infoDialog { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
+        #infoDialog .dlg-box { background: white; padding: 25px; border-radius: 10px; max-width: 320px; width: 85%; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; }
+        #infoDialog .dlg-msg { margin-bottom: 20px; font-size: 16px; color: #333; line-height: 1.5; white-space: pre-wrap; }
+        #infoDialog button { padding: 10px 30px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 15px; background: #4a90e2; color: white; }
+    </style>
+</head>
+<body>
+
+    <div id="loginBox">
+        <h2>欢迎登录</h2>
+        <input type="text" id="user" placeholder="用户名">
+        <input type="password" id="pass" placeholder="密码">
+        <button onclick="doLogin()">登录系统</button>
+        <p style="font-size: 14px; color: #888;">默认账号: Test / 000000</p>
+    </div>
+
+    <div id="mainApp">
+        <div class="header">
+            <span id="userLabel">无</span>
+            <button onclick="doLogout()">退出登录</button>
+        </div>
+        <div class="grid">
+            <div class="icon" onclick="openEaster()"><div class="circle yellow">🎯</div><br>活动经历</div>
+            <div class="icon" onclick="openHomeSchool()"><div class="circle blue">📘</div><br>家校本</div>
+            <div class="icon" onclick="openExam()"><div class="circle green">⭐</div><br>考试</div>
+            <div class="icon" onclick="openGPA()"><div class="circle orange">📊</div><br>动态成绩</div>
+            <div class="icon" onclick="openGrades()"><div class="circle brown">📄</div><br>成绩单</div>
+            <div class="icon" onclick="openNotice()"><div class="circle green">🔔</div><br>家校通知</div>
+            <div class="icon" onclick="openReport()"><div class="circle green">📝</div><br>学期报告</div>
+            <div class="icon" onclick="openPay()"><div class="circle blue">💳</div><br>缴费</div>
+            <div class="icon" onclick="openOverall()"><div class="circle yellow">📋</div><br>综合评价</div>
+            <div class="icon" onclick="openAttendance()"><div class="circle orange">🕒</div><br>考勤</div>
+            <div class="icon" onclick="openAnnounce()"><div class="circle blue">📢</div><br>公告通知</div>
+            <div class="icon" onclick="openSurvey()"><div class="circle deepblue">❓</div><br>问卷调研</div>
+        </div>
+    </div>
+
+    <div class="page" id="pageEaster">
+        <div class="page-header"><h3>Password</h3><button onclick="closePage('pageEaster')">返回主页</button></div>
+        <div style="padding: 30px; text-align: center;">
+            <input type="password" id="pwd" style="padding: 15px; width: 300px; font-size: 18px; margin-bottom: 20px; box-sizing: border-box; max-width: 100%;">
+            <br>
+            <button onclick="checkPwd()" style="padding: 15px 50px; font-size: 18px; background: #4a90e2; color: white; border: none;">确认</button>
+        </div>
+    </div>
+    <div class="full-screen-banner" id="pageSuccess">
+        <h1 class="big-text text-success">你小子居然猜对了！</h1>
+        <button class="back-btn" onclick="closeSuccess()">返回主页</button>
+    </div>
+    <div class="full-screen-banner" id="pageError">
+        <h1 class="big-text text-error">You dob被骗了吧哈哈哈！</h1>
+        <button class="back-btn" onclick="closeError()">返回主页</button>
+    </div>
+
+    <div class="page" id="pageHomeSchool">
+        <div class="page-header"><h3>家校本</h3><button onclick="closePage('pageHomeSchool')">返回主页</button></div>
+        <div id="adminDivHome" style="display:none;">
+            <div style="padding: 15px;"><button onclick="showCreateHome()" style="width:100%; padding:15px; background:#f9ba48; border:none; border-radius:8px; color:white; font-weight:bold;">+ 添加任务（管理员）</button></div>
+            <div class="create-box" id="createHome">
+                <input type="text" id="hDesc" placeholder="任务描述">
+                <input type="text" id="hAns" placeholder="正确答案">
+                <button onclick="addHome()">添加</button>
+            </div>
+        </div>
+
+        <div id="adminDivMembers" style="display:none;">
+            <div style="padding: 15px 15px 0 15px;">
+                <button onclick="showCreateMember()" style="width:100%; padding:15px; background:#4a90e2; border:none; border-radius:8px; color:white; font-weight:bold;">+ 添加成员（管理员）</button>
+            </div>
+            <div class="create-box" id="createMember">
+                <input type="text" id="mUser" placeholder="用户名">
+                <input type="text" id="mPass" placeholder="密码">
+                <button onclick="addMember()">添加成员</button>
+            </div>
+            <div class="pay-section-title">👥 成员管理</div>
+            <div id="memberManageList"></div>
+        </div>
+
+        <div id="homeList"></div>
+    </div>
+
+    <div class="page" id="pageExam">
+        <div class="page-header"><h3>考试</h3><button onclick="closePage('pageExam')">返回主页</button></div>
+        <div id="adminDivExam" style="display:none;">
+            <div style="padding: 15px;"><button onclick="showCreateExam()" style="width:100%; padding:15px; background:#f9ba48; border:none; border-radius:8px; color:white; font-weight:bold;">+ 添加考试（管理员）</button></div>
+            <div class="create-box" id="createExam">
+                <input type="number" id="eCount" placeholder="题数" oninput="makeExams()">
+                <div id="examInputs"></div>
+                <button onclick="addExam()">添加</button>
+            </div>
+        </div>
+        <div id="examList"></div>
+    </div>
+
+    <div class="page" id="pageGPA">
+        <div class="page-header"><h3>动态成绩</h3><button onclick="closePage('pageGPA')">返回主页</button></div>
+        <div class="gpa-box">
+            <h2>GPA</h2>
+            <div class="gpa-num"><span id="gpaValue">0.00</span> <span style="font-size:32px; color:#999;">/ 4.30</span></div>
+            <p id="gpaInfo" style="color:#666;"></p>
+        </div>
+    </div>
+
+    <div class="page" id="pageGrades">
+        <div class="page-header"><h3>成绩单</h3><button onclick="closePage('pageGrades')">返回主页</button></div>
+        <div id="gradeContent"></div>
+    </div>
+
+    <div class="page" id="pageNotice">
+        <div class="page-header"><h3>家校通知</h3><button onclick="closePage('pageNotice')">返回主页</button></div>
+        <div style="padding: 15px;">
+            <div style="background:#fff; padding:20px; border-radius:8px; margin-bottom:20px;">
+                <h4 style="margin-top:0;">发布新通知</h4>
+                <textarea id="noticeInput" placeholder="请输入通知内容..." style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:16px; height:80px; resize:vertical; box-sizing:border-box;"></textarea>
+                <button onclick="publishNotice()" style="margin-top:10px; padding:10px 20px; background:#4a90e2; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">发布通知</button>
+            </div>
+            <div id="noticeList"></div>
+        </div>
+    </div>
+
+    <div class="page" id="pageReport">
+        <div class="page-header"><h3>学期报告</h3><button onclick="closePage('pageReport')">返回主页</button></div>
+        <div class="report-card report-task">
+            <div class="report-title">📘 任务通过率</div>
+            <div class="report-rate" id="taskRate">0%</div>
+            <div class="progress-bar"><div class="progress-fill fill-task" id="taskFill" style="width:0%;"></div></div>
+            <div class="report-detail" id="taskDetail">正确提交 0 次 / 总提交 0 次</div>
+        </div>
+        <div class="report-card report-exam">
+            <div class="report-title">⭐ 考试通过率</div>
+            <div class="report-rate" id="examRate">0%</div>
+            <div class="progress-bar"><div class="progress-fill fill-exam" id="examFill" style="width:0%;"></div></div>
+            <div class="report-detail" id="examDetail">正确提交 0 次 / 总提交 0 次</div>
+        </div>
+    </div>
+
+    <div class="page" id="pagePay">
+        <div class="page-header"><h3>缴费</h3><button onclick="closePage('pagePay')">返回主页</button></div>
+        <div id="adminDivPay" style="display:none;">
+            <div style="padding: 15px;"><button onclick="showCreatePay()" style="width:100%; padding:15px; background:#f9ba48; border:none; border-radius:8px; color:white; font-weight:bold;">+ 创建缴费（管理员）</button></div>
+            <div class="create-box" id="createPay">
+                <input type="text" id="pContent" placeholder="缴费内容（如：学费、班费）">
+                <input type="number" id="pAmount" placeholder="金额（RCM）">
+                <button onclick="addPay()">创建缴费</button>
+            </div>
+        </div>
+        <div class="pay-section-title">💰 缴费项目（RCM）</div>
+        <div id="payList"></div>
+        <div class="pay-section-title">👥 成员余额（RCM）</div>
+        <div id="memberList"></div>
+    </div>
+
+    <div class="page" id="pageOverall">
+        <div class="page-header"><h3>综合评价</h3><button onclick="closePage('pageOverall')">返回主页</button></div>
+        <div class="overall-box">
+            <div class="overall-label">综合评价得分</div>
+            <div class="overall-num" id="overallScore">0</div>
+            <div class="overall-formula">公式：GPA ÷ 4.3 × 100</div>
+        </div>
+        <div class="overall-detail" id="overallDetail"></div>
+    </div>
+
+    <div class="page" id="pageAttendance">
+        <div class="page-header"><h3>考勤</h3><button onclick="closePage('pageAttendance')">返回主页</button></div>
+        <div id="adminDivAttendance" style="display:none;">
+            <div style="padding: 15px;">
+                <button onclick="createTodayAttendance()" style="width:100%; padding:15px; background:#f9ba48; border:none; border-radius:8px; color:white; font-weight:bold;">+ 创建今日考勤（管理员）</button>
+            </div>
+        </div>
+        <div id="checkinArea"></div>
+        <div class="attendance-rate-box">
+            <div class="attendance-rate-label">我的出勤率</div>
+            <div class="attendance-rate-num" id="attendanceRate">0%</div>
+            <div class="attendance-rate-detail" id="attendanceDetail">已打卡 0 次 / 共 0 次考勤</div>
+        </div>
+        <div class="pay-section-title">📅 考勤记录</div>
+        <div id="attendanceList"></div>
+    </div>
+
+    <div class="page" id="pageAnnounce">
+        <div class="page-header"><h3>公告通知</h3><button onclick="closePage('pageAnnounce')">返回主页</button></div>
+        <div style="padding: 15px;">
+            <div style="background:#fff; padding:20px; border-radius:8px; margin-bottom:20px;">
+                <h4 style="margin-top:0;">发布新公告</h4>
+                <textarea id="announceInput" placeholder="请输入公告内容..." style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:16px; height:80px; resize:vertical; box-sizing:border-box;"></textarea>
+                <button onclick="publishAnnounce()" style="margin-top:10px; padding:10px 20px; background:#4a90e2; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">发布公告</button>
+            </div>
+            <div id="announceList"></div>
+        </div>
+    </div>
+
+    <div class="page" id="pageSurvey">
+        <div class="page-header"><h3>问卷调研</h3><button onclick="closePage('pageSurvey')">返回主页</button></div>
+        <div id="adminDivSurvey" style="display:none;">
+            <div style="padding: 15px;"><button onclick="showCreateSurvey()" style="width:100%; padding:15px; background:#f9ba48; border:none; border-radius:8px; color:white; font-weight:bold;">+ 添加问卷（管理员）</button></div>
+            <div class="create-box" id="createSurvey">
+                <input type="number" id="sCount" placeholder="题数" oninput="makeSurveys()">
+                <div id="surveyInputs"></div>
+                <button onclick="addSurvey()">添加</button>
+            </div>
+        </div>
+        <div id="surveyList"></div>
+    </div>
+
+    <div id="customDialog">
+        <div class="dlg-box">
+            <div class="dlg-msg" id="dlgMsg"></div>
+            <input type="text" class="dlg-input" id="dlgInput">
+            <div class="dlg-btns">
+                <button class="btn-ok" onclick="dlgOk()">确定</button>
+                <button class="btn-cancel" onclick="dlgCancel()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoDialog">
+        <div class="dlg-box">
+            <div class="dlg-msg" id="infoMsg"></div>
+            <button onclick="document.getElementById('infoDialog').style.display='none'">确定</button>
+        </div>
+    </div>
+
+    <script>
+        // ============ 自定义对话框 ============
+        var _dlgCallback = null;
+        function myPrompt(msg, def, callback) {
+            document.getElementById('dlgMsg').innerText = msg;
+            var inp = document.getElementById('dlgInput');
+            inp.style.display = 'block';
+            inp.value = def === undefined || def === null ? '' : def;
+            document.getElementById('customDialog').style.display = 'flex';
+            _dlgCallback = callback;
+            setTimeout(function(){ inp.focus(); inp.select(); }, 80);
+        }
+        function myConfirm(msg, callback) {
+            document.getElementById('dlgMsg').innerText = msg;
+            document.getElementById('dlgInput').style.display = 'none';
+            document.getElementById('customDialog').style.display = 'flex';
+            _dlgCallback = callback;
+        }
+        function dlgOk() {
+            var inp = document.getElementById('dlgInput');
+            var isPrompt = inp.style.display !== 'none';
+            var val = isPrompt ? inp.value : true;
+            document.getElementById('customDialog').style.display = 'none';
+            if (_dlgCallback) { var cb = _dlgCallback; _dlgCallback = null; cb(val); }
+        }
+        function dlgCancel() {
+            var inp = document.getElementById('dlgInput');
+            var isPrompt = inp.style.display !== 'none';
+            document.getElementById('customDialog').style.display = 'none';
+            if (_dlgCallback) { var cb = _dlgCallback; _dlgCallback = null; cb(isPrompt ? null : false); }
+        }
+        function showInfo(msg) {
+            document.getElementById('infoMsg').innerText = msg;
+            document.getElementById('infoDialog').style.display = 'flex';
+        }
+        document.getElementById('dlgInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); dlgOk(); }
+        });
+
+        // ============ 日期工具 ============
+        function getTodayStr() {
+            var d = new Date();
+            var y = d.getFullYear();
+            var m = (d.getMonth()+1) < 10 ? '0'+(d.getMonth()+1) : (d.getMonth()+1);
+            var day = d.getDate() < 10 ? '0'+d.getDate() : d.getDate();
+            return y + '-' + m + '-' + day;
+        }
+
+        // ============ 全局数据 ============
+        var tasks = [
+            {name:"算出根号2的第三位", answer:"1.414"},
+            {name:"算出圆周率的前30位", answer:"3.141592653589793238462643383279"}
+        ];
+        var exams = [];
+        var surveys = [];
+        var notices = [];
+        var announces = [];
+        var pays = [];
+        
+        var users = [
+            { name: "James", password: "James", isAdmin: true, balance: 1000 },
+            { name: "Test", password: "000000", isAdmin: false, balance: 1000 }
+        ];
+        
+        var attendanceDays = [];
+        var checkins = {};
+        
+        var currentUser = "";
+        var isAdmin = false;
+        var scores = {};
+        var stats = {};
+        var paid = {};
+
+        // 从 localStorage 恢复所有数据
+        try { var s1 = localStorage.getItem('allNotices'); if (s1) notices = JSON.parse(s1); } catch(e) {}
+        try { var s2 = localStorage.getItem('allPays'); if (s2) pays = JSON.parse(s2); } catch(e) {}
+        try { var s3 = localStorage.getItem('allUsers'); if (s3) users = JSON.parse(s3); } catch(e) {}
+        try { var s4 = localStorage.getItem('allAttendanceDays'); if (s4) attendanceDays = JSON.parse(s4); } catch(e) {}
+        try { var s5 = localStorage.getItem('allAnnounces'); if (s5) announces = JSON.parse(s5); } catch(e) {}
+        try { var s6 = localStorage.getItem('allTasks'); if (s6) tasks = JSON.parse(s6); } catch(e) {}
+        try { var s7 = localStorage.getItem('allExams'); if (s7) exams = JSON.parse(s7); } catch(e) {}
+        try { var s8 = localStorage.getItem('allSurveys'); if (s8) surveys = JSON.parse(s8); } catch(e) {}
+
+        // 所有保存函数
+        function saveNotices() { try { localStorage.setItem('allNotices', JSON.stringify(notices)); } catch(e) {} }
+        function savePays() { try { localStorage.setItem('allPays', JSON.stringify(pays)); } catch(e) {} }
+        function saveUsers() { try { localStorage.setItem('allUsers', JSON.stringify(users)); } catch(e) {} }
+        function saveStats() { try { localStorage.setItem('stats_' + currentUser, JSON.stringify(stats)); } catch(e) {} }
+        function saveScores() { try { localStorage.setItem('score_' + currentUser, JSON.stringify(scores)); } catch(e) {} }
+        function savePaid() { try { localStorage.setItem('paid_' + currentUser, JSON.stringify(paid)); } catch(e) {} }
+        function saveAttendanceDays() { try { localStorage.setItem('allAttendanceDays', JSON.stringify(attendanceDays)); } catch(e) {} }
+        function saveCheckins() { try { localStorage.setItem('checkins_' + currentUser, JSON.stringify(checkins)); } catch(e) {} }
+        function saveAnnounces() { try { localStorage.setItem('allAnnounces', JSON.stringify(announces)); } catch(e) {} }
+        function saveTasks() { try { localStorage.setItem('allTasks', JSON.stringify(tasks)); } catch(e) {} }
+        function saveExams() { try { localStorage.setItem('allExams', JSON.stringify(exams)); } catch(e) {} }
+        function saveSurveys() { try { localStorage.setItem('allSurveys', JSON.stringify(surveys)); } catch(e) {} }
+
+        // ============ 登录 ============
+        function doLogin() {
+            var u = document.getElementById('user').value.trim();
+            var p = document.getElementById('pass').value.trim();
+            var found = null;
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].name.toLowerCase() === u.toLowerCase() && users[i].password === p) {
+                    found = users[i]; break;
+                }
+            }
+            if (found) {
+                currentUser = found.name;
+                isAdmin = found.isAdmin;
+                enterApp();
+            } else {
+                showInfo("账号或密码错误！");
+            }
+        }
+        function enterApp() {
+            try {
+                var sv = localStorage.getItem('score_' + currentUser);
+                scores = sv ? JSON.parse(sv) : {};
+                var ss = localStorage.getItem('stats_' + currentUser);
+                stats = ss ? JSON.parse(ss) : {};
+                var sp = localStorage.getItem('paid_' + currentUser);
+                paid = sp ? JSON.parse(sp) : {};
+                var sc = localStorage.getItem('checkins_' + currentUser);
+                checkins = sc ? JSON.parse(sc) : {};
+            } catch(e) { scores = {}; stats = {}; paid = {}; checkins = {}; }
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('userLabel').innerText = currentUser + (isAdmin ? " (管理员)" : " (普通用户)");
+            updateGPA();
+        }
+        function doLogout() {
+            currentUser = ""; isAdmin = false; scores = {}; stats = {}; paid = {}; checkins = {};
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('loginBox').style.display = 'block';
+            document.getElementById('user').value = '';
+            document.getElementById('pass').value = '';
+        }
+        function closePage(id) { document.getElementById(id).style.display = 'none'; }
+
+        // ============ 活动经历 ============
+        function openEaster() { document.getElementById('pwd').value = ''; document.getElementById('pageEaster').style.display = 'block'; }
+        function checkPwd() {
+            var p = document.getElementById('pwd').value;
+            document.getElementById('pageEaster').style.display = 'none';
+            if (p === "123456") { document.getElementById('pageSuccess').style.display = 'flex'; }
+            else { document.getElementById('pageError').style.display = 'flex'; }
+            document.getElementById('pwd').value = '';
+        }
+        function closeSuccess() { document.getElementById('pageSuccess').style.display = 'none'; }
+        function closeError() { document.getElementById('pageError').style.display = 'none'; }
+
+        // ============ 家校本 ============
+        function openHomeSchool() {
+            document.getElementById('pageHomeSchool').style.display = 'block';
+            document.getElementById('adminDivHome').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('adminDivMembers').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('createHome').style.display = 'none';
+            document.getElementById('createMember').style.display = 'none';
+            renderHome();
+            renderMemberManage();
+        }
+        function showCreateHome() { document.getElementById('createHome').style.display = 'block'; }
+        function addHome() {
+            var d = document.getElementById('hDesc').value.trim();
+            var a = document.getElementById('hAns').value.trim();
+            if (!d || !a) { showInfo("请填写完整！"); return; }
+            tasks.push({name:d, answer:a});
+            saveTasks();
+            document.getElementById('hDesc').value = '';
+            document.getElementById('hAns').value = '';
+            document.getElementById('createHome').style.display = 'none';
+            renderHome(); updateGPA();
+        }
+        function renderHome() {
+            var html = "";
+            for (var i = 0; i < tasks.length; i++) {
+                var done = scores['task_'+i] ? '✅' : '❌';
+                var btn = "";
+                if (isAdmin) btn = `<div style="margin-top:10px; text-align:right;"><button onclick="editHome(${i})">编辑</button> <button onclick="delHome(${i})" style="color:red;">删除</button></div>`;
+                html += `<div class="task-card"><div class="task-title"><span class="task-status">${done}</span>${tasks[i].name}</div><div class="input-group"><input type="text" id="in_${i}"><button onclick="subHome(${i})">提交</button></div>${btn}</div>`;
+            }
+            document.getElementById('homeList').innerHTML = html;
+        }
+        function subHome(index) {
+            var input = document.getElementById('in_' + index);
+            var val = input.value.trim();
+            if (val === '') return;
+            var key = 'task_' + index;
+            if (!stats[key]) stats[key] = {total: 0, correct: 0};
+            stats[key].total += 1;
+            if (val === tasks[index].answer) { scores[key] = true; stats[key].correct += 1; saveScores(); }
+            saveStats();
+            input.value = '';
+            renderHome(); updateGPA();
+        }
+        function editHome(index) {
+            myPrompt("修改任务描述：", tasks[index].name, function(n) {
+                if (n === null || n.trim() === '') return;
+                myPrompt("修改正确答案：", tasks[index].answer, function(a) {
+                    if (a === null || a.trim() === '') return;
+                    tasks[index].name = n.trim(); tasks[index].answer = a.trim();
+                    saveTasks();
+                    renderHome();
+                });
+            });
+        }
+        function delHome(index) {
+            myConfirm("确定要删除「" + tasks[index].name + "」吗？", function(ok) {
+                if (!ok) return;
+                tasks.splice(index, 1);
+                saveTasks();
+                // 清理 scores 中 task_ 相关键，重新编号
+                var ns = {};
+                for (var key in scores) {
+                    if (key.indexOf('task_') !== 0) { ns[key] = scores[key]; continue; }
+                    var k = parseInt(key.split('_')[1]);
+                    if (k < index) ns['task_'+k] = true;
+                    if (k > index) ns['task_'+(k-1)] = true;
+                }
+                scores = ns; saveScores();
+                var nst = {};
+                for (var key2 in stats) {
+                    if (key2.indexOf('task_') !== 0) { nst[key2] = stats[key2]; continue; }
+                    var k2 = parseInt(key2.split('_')[1]);
+                    if (k2 < index) nst['task_'+k2] = stats[key2];
+                    if (k2 > index) nst['task_'+(k2-1)] = stats[key2];
+                }
+                stats = nst; saveStats();
+                renderHome(); updateGPA();
+            });
+        }
+
+        // ============ 成员管理 ============
+        function showCreateMember() { document.getElementById('createMember').style.display = 'block'; }
+        function renderMemberManage() {
+            var html = "";
+            for (var i = 0; i < users.length; i++) {
+                var u = users[i];
+                var selfMark = (u.name === currentUser) ? '<span class="user-tag">我自己</span>' : '';
+                var adminTag = u.isAdmin ? '<span class="user-tag user-tag-admin">管理员</span>' : '';
+                var btns = "";
+                if (isAdmin && u.name !== currentUser) {
+                    btns = `<button onclick="deleteMember(${i})" style="padding:6px 12px; border:none; border-radius:4px; background:#ffe6e6; color:red; cursor:pointer;">删除</button>`;
+                } else if (u.name === currentUser) {
+                    btns = `<span style="font-size:12px; color:#999;">不能删除自己</span>`;
+                }
+                html += `<div class="user-item"><div class="user-name">${u.name}${selfMark}${adminTag}</div><div>${btns}</div></div>`;
+            }
+            document.getElementById('memberManageList').innerHTML = html;
+        }
+        function addMember() {
+            var name = document.getElementById('mUser').value.trim();
+            var pass = document.getElementById('mPass').value.trim();
+            if (!name) { showInfo("请输入用户名！"); return; }
+            if (!pass) { showInfo("请输入密码！"); return; }
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].name.toLowerCase() === name.toLowerCase()) { showInfo("用户名「" + name + "」已存在！"); return; }
+            }
+            users.push({ name: name, password: pass, isAdmin: false, balance: 1000 });
+            saveUsers();
+            document.getElementById('mUser').value = '';
+            document.getElementById('mPass').value = '';
+            document.getElementById('createMember').style.display = 'none';
+            renderMemberManage();
+            showInfo("✅ 成员「" + name + "」添加成功！");
+        }
+        function deleteMember(index) {
+            var u = users[index];
+            if (u.name === currentUser) { showInfo("不能删除自己！"); return; }
+            myConfirm("确定要删除成员「" + u.name + "」吗？", function(ok) {
+                if (!ok) return;
+                users.splice(index, 1);
+                saveUsers();
+                renderMemberManage();
+                showInfo("已删除成员「" + u.name + "」");
+            });
+        }
+
+        // ============ 考试 ============
+        function openExam() {
+            document.getElementById('pageExam').style.display = 'block';
+            document.getElementById('adminDivExam').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('createExam').style.display = 'none';
+            document.getElementById('eCount').value = '';
+            document.getElementById('examInputs').innerHTML = '';
+            renderExam();
+        }
+        function showCreateExam() { document.getElementById('createExam').style.display = 'block'; }
+        function makeExams() {
+            var c = parseInt(document.getElementById('eCount').value);
+            var html = "";
+            for (var i = 1; i <= c; i++) html += `<h4>题目 ${i}</h4><input type="text" class="eDesc" placeholder="题目描述"><input type="text" class="eAns" placeholder="正确答案">`;
+            document.getElementById('examInputs').innerHTML = html;
+        }
+        function addExam() {
+            var c = parseInt(document.getElementById('eCount').value);
+            if (!c || c <= 0) { showInfo("请输入有效题数！"); return; }
+            var des = document.querySelectorAll('.eDesc');
+            var ans = document.querySelectorAll('.eAns');
+            for (var i = 0; i < c; i++) {
+                if (!des[i].value.trim() || !ans[i].value.trim()) { showInfo("请把题目填写完整！"); return; }
+                exams.push({name: des[i].value.trim(), answer: ans[i].value.trim()});
+            }
+            saveExams();
+            document.getElementById('eCount').value = '';
+            document.getElementById('examInputs').innerHTML = '';
+            document.getElementById('createExam').style.display = 'none';
+            renderExam(); updateGPA();
+        }
+        function renderExam() {
+            var html = "";
+            for (var i = 0; i < exams.length; i++) {
+                var done = scores['exam_'+i] ? '✅' : '❌';
+                var btn = "";
+                if (isAdmin) btn = `<div style="margin-top:10px; text-align:right;"><button onclick="editExam(${i})">编辑</button> <button onclick="delExam(${i})" style="color:red;">删除</button></div>`;
+                html += `<div class="task-card"><div class="task-title"><span class="task-status">${done}</span>${exams[i].name}</div><div class="input-group"><input type="text" id="ein_${i}"><button onclick="subExam(${i})">提交</button></div>${btn}</div>`;
+            }
+            document.getElementById('examList').innerHTML = html;
+        }
+        function subExam(index) {
+            var input = document.getElementById('ein_' + index);
+            var val = input.value.trim();
+            if (val === '') return;
+            var key = 'exam_' + index;
+            if (!stats[key]) stats[key] = {total: 0, correct: 0};
+            stats[key].total += 1;
+            if (val === exams[index].answer) { scores[key] = true; stats[key].correct += 1; saveScores(); }
+            saveStats();
+            input.value = '';
+            renderExam(); updateGPA();
+        }
+        function editExam(index) {
+            myPrompt("修改题目：", exams[index].name, function(n) {
+                if (n === null || n.trim() === '') return;
+                myPrompt("修改正确答案：", exams[index].answer, function(a) {
+                    if (a === null || a.trim() === '') return;
+                    exams[index].name = n.trim(); exams[index].answer = a.trim();
+                    saveExams();
+                    renderExam();
+                });
+            });
+        }
+        function delExam(index) {
+            myConfirm("确定要删除「" + exams[index].name + "」吗？", function(ok) {
+                if (!ok) return;
+                exams.splice(index, 1);
+                saveExams();
+                var ns = {};
+                for (var key in scores) {
+                    if (key.indexOf('exam_') !== 0) { ns[key] = scores[key]; continue; }
+                    var k = parseInt(key.split('_')[1]);
+                    if (k < index) ns['exam_'+k] = true;
+                    if (k > index) ns['exam_'+(k-1)] = true;
+                }
+                scores = ns; saveScores();
+                var nst = {};
+                for (var key2 in stats) {
+                    if (key2.indexOf('exam_') !== 0) { nst[key2] = stats[key2]; continue; }
+                    var k2 = parseInt(key2.split('_')[1]);
+                    if (k2 < index) nst['exam_'+k2] = stats[key2];
+                    if (k2 > index) nst['exam_'+(k2-1)] = stats[key2];
+                }
+                stats = nst; saveStats();
+                renderExam(); updateGPA();
+            });
+        }
+
+        // ============ 动态成绩 ============
+        function openGPA() { document.getElementById('pageGPA').style.display = 'block'; updateGPA(); }
+        function updateGPA() {
+            var total = tasks.length + exams.length + surveys.length;
+            // 只统计实际存在的题目
+            var count = 0;
+            for (var i = 0; i < tasks.length; i++) if (scores['task_' + i]) count++;
+            for (var j = 0; j < exams.length; j++) if (scores['exam_' + j]) count++;
+            for (var k = 0; k < surveys.length; k++) if (scores['survey_' + k]) count++;
+            var gpa = total === 0 ? 0 : (count / total) * 4.3;
+            if (gpa > 4.3) gpa = 4.3;
+            document.getElementById('gpaValue').innerText = gpa.toFixed(2);
+            document.getElementById('gpaInfo').innerText = "已完成 " + count + " / 共 " + total + " 题（满分 4.30）";
+        }
+
+        // ============ 成绩单 ============
+        function openGrades() { document.getElementById('pageGrades').style.display = 'block'; renderGrades(); }
+        function renderGrades() {
+            var html = "<h3 style='margin:20px;'>家校本任务</h3>";
+            for (var i = 0; i < tasks.length; i++) {
+                var isC = scores['task_' + i] ? true : false;
+                html += `<div class="grade-section"><div class="grade-row"><span>${tasks[i].name}</span><span class="grade-score ${isC?'score-1':'score-0'}">${isC?'1':'0'}</span></div></div>`;
+            }
+            html += "<h3 style='margin:20px;'>考试题目</h3>";
+            for (var j = 0; j < exams.length; j++) {
+                var isCE = scores['exam_' + j] ? true : false;
+                html += `<div class="grade-section"><div class="grade-row"><span>${exams[j].name}</span><span class="grade-score ${isCE?'score-1':'score-0'}">${isCE?'1':'0'}</span></div></div>`;
+            }
+            html += "<h3 style='margin:20px;'>问卷调研</h3>";
+            for (var k = 0; k < surveys.length; k++) {
+                var isCS = scores['survey_' + k] ? true : false;
+                html += `<div class="grade-section"><div class="grade-row"><span>${surveys[k].name}</span><span class="grade-score ${isCS?'score-1':'score-0'}">${isCS?'1':'0'}</span></div></div>`;
+            }
+            document.getElementById('gradeContent').innerHTML = html;
+        }
+
+        // ============ 家校通知 ============
+        function openNotice() { document.getElementById('pageNotice').style.display = 'block'; document.getElementById('noticeInput').value = ''; renderNotices(); }
+        function renderNotices() {
+            var html = "";
+            for (var i = 0; i < notices.length; i++) {
+                var n = notices[i];
+                var adminBtns = "";
+                if (isAdmin) adminBtns = `<div style="margin-top:10px; text-align:right;"><button onclick="editNotice(${n.id})">编辑</button> <button onclick="deleteNotice(${n.id})" style="color:red;">删除</button></div>`;
+                html += `<div class="task-card" style="margin-bottom:15px;"><div class="notice-content">${n.content}</div>${adminBtns}</div>`;
+            }
+            if (notices.length === 0) html = "<div style='text-align:center; color:#888; padding:20px;'>暂无通知</div>";
+            document.getElementById('noticeList').innerHTML = html;
+        }
+        function publishNotice() {
+            var content = document.getElementById('noticeInput').value.trim();
+            if (!content) { showInfo("请输入通知内容！"); return; }
+            notices.push({ id: Date.now(), content: content });
+            saveNotices();
+            document.getElementById('noticeInput').value = '';
+            renderNotices();
+        }
+        function editNotice(id) {
+            var notice = null;
+            for (var i = 0; i < notices.length; i++) if (notices[i].id === id) { notice = notices[i]; break; }
+            if (!notice) return;
+            myPrompt("修改通知内容：", notice.content, function(nc) {
+                if (nc === null || nc.trim() === '') return;
+                notice.content = nc.trim(); saveNotices(); renderNotices();
+            });
+        }
+        function deleteNotice(id) {
+            myConfirm("确定要删除这条通知吗？", function(ok) {
+                if (!ok) return;
+                var nn = [];
+                for (var i = 0; i < notices.length; i++) if (notices[i].id !== id) nn.push(notices[i]);
+                notices = nn; saveNotices(); renderNotices();
+            });
+        }
+
+        // ============ 学期报告 ============
+        function openReport() { document.getElementById('pageReport').style.display = 'block'; renderReport(); }
+        function renderReport() {
+            var tT = 0, tC = 0, eT = 0, eC = 0;
+            for (var key in stats) {
+                if (key.indexOf('task_') === 0) { tT += stats[key].total || 0; tC += stats[key].correct || 0; }
+                else if (key.indexOf('exam_') === 0) { eT += stats[key].total || 0; eC += stats[key].correct || 0; }
+            }
+            var tR = tT === 0 ? 0 : Math.round(tC / tT * 100);
+            var eR = eT === 0 ? 0 : Math.round(eC / eT * 100);
+            document.getElementById('taskRate').innerText = tR + '%';
+            document.getElementById('taskFill').style.width = tR + '%';
+            document.getElementById('taskDetail').innerText = '正确提交 ' + tC + ' 次 / 总提交 ' + tT + ' 次';
+            document.getElementById('examRate').innerText = eR + '%';
+            document.getElementById('examFill').style.width = eR + '%';
+            document.getElementById('examDetail').innerText = '正确提交 ' + eC + ' 次 / 总提交 ' + eT + ' 次';
+        }
+
+        // ============ 缴费 ============
+        function openPay() {
+            document.getElementById('pagePay').style.display = 'block';
+            document.getElementById('adminDivPay').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('createPay').style.display = 'none';
+            renderPay(); renderMembers();
+        }
+        function showCreatePay() { document.getElementById('createPay').style.display = 'block'; }
+        function addPay() {
+            var c = document.getElementById('pContent').value.trim();
+            var a = parseFloat(document.getElementById('pAmount').value);
+            if (!c) { showInfo("请输入缴费内容！"); return; }
+            if (isNaN(a) || a <= 0) { showInfo("请输入有效的金额（RCM）！"); return; }
+            pays.push({ id: Date.now(), content: c, amount: a });
+            savePays();
+            document.getElementById('pContent').value = '';
+            document.getElementById('pAmount').value = '';
+            document.getElementById('createPay').style.display = 'none';
+            renderPay();
+        }
+        function renderPay() {
+            var html = "";
+            for (var i = 0; i < pays.length; i++) {
+                var p = pays[i];
+                var adminBtns = "";
+                if (isAdmin) adminBtns = `<div><button onclick="editPay(${p.id})" style="padding:6px 12px; border:none; border-radius:4px; background:#f0f0f0; cursor:pointer;">编辑</button> <button onclick="deletePay(${p.id})" style="padding:6px 12px; border:none; border-radius:4px; background:#ffe6e6; color:red; cursor:pointer;">删除</button></div>`;
+                var payAction = paid[p.id] ? `<span class="paid-badge">✓ 已缴费</span>` : `<button class="pay-btn" onclick="doPay(${p.id})">缴费</button>`;
+                html += `<div class="pay-item"><div class="pay-item-content">${p.content}</div><div class="pay-item-amount">${p.amount} <span>RCM</span></div>${payAction}${adminBtns}</div>`;
+            }
+            if (pays.length === 0) html = "<div style='text-align:center; color:#888; padding:20px;'>暂无缴费项目</div>";
+            document.getElementById('payList').innerHTML = html;
+        }
+        function editPay(id) {
+            var pay = null;
+            for (var i = 0; i < pays.length; i++) if (pays[i].id === id) { pay = pays[i]; break; }
+            if (!pay) return;
+            myPrompt("修改缴费内容：", pay.content, function(nc) {
+                if (nc === null || nc.trim() === '') return;
+                myPrompt("修改金额（RCM）：", pay.amount, function(na) {
+                    var nAn = parseFloat(na);
+                    if (isNaN(nAn) || nAn <= 0) return;
+                    pay.content = nc.trim(); pay.amount = nAn; savePays(); renderPay();
+                });
+            });
+        }
+        function deletePay(id) {
+            myConfirm("确定要删除这条缴费项目吗？", function(ok) {
+                if (!ok) return;
+                var np = [];
+                for (var i = 0; i < pays.length; i++) if (pays[i].id !== id) np.push(pays[i]);
+                pays = np; savePays(); renderPay();
+            });
+        }
+        function doPay(id) {
+            var pay = null;
+            for (var i = 0; i < pays.length; i++) if (pays[i].id === id) { pay = pays[i]; break; }
+            if (!pay) { showInfo("找不到该缴费项目！"); return; }
+            var ui = -1;
+            for (var j = 0; j < users.length; j++) if (users[j].name === currentUser) { ui = j; break; }
+            if (ui === -1) { showInfo("找不到当前用户！"); return; }
+            if (users[ui].balance < pay.amount) { showInfo("余额不足！\n当前余额 " + users[ui].balance + " RCM，需支付 " + pay.amount + " RCM"); return; }
+            users[ui].balance -= pay.amount;
+            saveUsers();
+            paid[id] = true; savePaid();
+            renderPay(); renderMembers();
+            showInfo("✅ 缴费成功！\n已支付 " + pay.amount + " RCM\n剩余余额 " + users[ui].balance + " RCM");
+        }
+
+        // ============ 成员余额 ============
+        function renderMembers() {
+            var html = "";
+            for (var i = 0; i < users.length; i++) {
+                var m = users[i];
+                var sm = (m.name === currentUser) ? '<span class="self-mark">我自己</span>' : '';
+                var ab = isAdmin ? `<div style="margin-left:15px;"><button onclick="editMember(${i})" style="padding:6px 12px; border:none; border-radius:4px; background:#f0f0f0; cursor:pointer;">编辑</button></div>` : '';
+                html += `<div class="member-item"><div class="member-name">${m.name}${sm}</div><div class="member-balance">${m.balance} <span>RCM</span></div>${ab}</div>`;
+            }
+            document.getElementById('memberList').innerHTML = html;
+        }
+        function editMember(index) {
+            myPrompt("请输入新的RCM数：", users[index].balance, function(input) {
+                if (input === null || input === '') return;
+                var nb = parseFloat(input);
+                if (isNaN(nb)) { showInfo("请输入有效数字！"); return; }
+                users[index].balance = nb; saveUsers(); renderMembers();
+            });
+        }
+
+        // ============ 综合评价 ============
+        function openOverall() { document.getElementById('pageOverall').style.display = 'block'; renderOverall(); }
+        function renderOverall() {
+            var total = tasks.length + exams.length + surveys.length;
+            var count = 0;
+            for (var i = 0; i < tasks.length; i++) if (scores['task_' + i]) count++;
+            for (var j = 0; j < exams.length; j++) if (scores['exam_' + j]) count++;
+            for (var k = 0; k < surveys.length; k++) if (scores['survey_' + k]) count++;
+            var gpa = total === 0 ? 0 : (count / total) * 4.3;
+            if (gpa > 4.3) gpa = 4.3;
+            var overall = total === 0 ? 0 : (gpa / 4.3) * 100;
+            document.getElementById('overallScore').innerText = overall.toFixed(1);
+            document.getElementById('overallDetail').innerHTML = `
+                <div class="detail-row"><span>完成任务/考试/问卷数</span><span>${count} / ${total}</span></div>
+                <div class="detail-row"><span>当前 GPA</span><span>${gpa.toFixed(2)} / 4.30</span></div>
+                <div class="detail-row"><span>综合评价</span><span style="font-weight:bold; color:#667eea;">${overall.toFixed(1)} / 100</span></div>
+            `;
+        }
+
+        // ============ 考勤 ============
+        function openAttendance() {
+            document.getElementById('pageAttendance').style.display = 'block';
+            document.getElementById('adminDivAttendance').style.display = isAdmin ? 'block' : 'none';
+            renderAttendance();
+        }
+        function createTodayAttendance() {
+            var today = getTodayStr();
+            for (var i = 0; i < attendanceDays.length; i++) if (attendanceDays[i] === today) { showInfo("今天的考勤已创建过了！"); return; }
+            attendanceDays.push(today);
+            attendanceDays.sort(function(a,b) { return b.localeCompare(a); });
+            saveAttendanceDays(); renderAttendance();
+            showInfo("✅ 已创建今日（" + today + "）的考勤！");
+        }
+        function doCheckin(dateStr) {
+            if (checkins[dateStr]) { showInfo("你已经打过卡了！"); return; }
+            checkins[dateStr] = true; saveCheckins(); renderAttendance();
+            showInfo("✅ 打卡成功！\n日期：" + dateStr);
+        }
+        function renderAttendance() {
+            var today = getTodayStr();
+            var ca = document.getElementById('checkinArea');
+            var todayHas = false;
+            for (var i = 0; i < attendanceDays.length; i++) if (attendanceDays[i] === today) { todayHas = true; break; }
+            if (todayHas) {
+                if (checkins[today]) ca.innerHTML = `<div class="checkin-card"><div class="checkin-date">📅 今日考勤 · ${today}</div><span class="checked-badge">✓ 今日已打卡</span></div>`;
+                else ca.innerHTML = `<div class="checkin-card"><div class="checkin-date">📅 今日考勤 · ${today}</div><button class="checkin-btn" onclick="doCheckin('${today}')">打 卡</button></div>`;
+            } else {
+                ca.innerHTML = `<div class="no-attendance"><p style="font-size: 40px; margin: 0;">📭</p><p>今日暂无考勤安排</p><p style="font-size: 13px;">（管理员还未创建今日考勤）</p></div>`;
+            }
+            var tD = attendanceDays.length, cC = 0;
+            for (var k = 0; k < attendanceDays.length; k++) if (checkins[attendanceDays[k]]) cC++;
+            var rate = tD === 0 ? 0 : Math.round((cC / tD) * 100);
+            document.getElementById('attendanceRate').innerText = rate + '%';
+            document.getElementById('attendanceDetail').innerText = '已打卡 ' + cC + ' 次 / 共 ' + tD + ' 次考勤';
+            var lh = "";
+            if (attendanceDays.length === 0) lh = "<div style='text-align:center; color:#888; padding:20px;'>暂无考勤记录</div>";
+            else {
+                for (var j = 0; j < attendanceDays.length; j++) {
+                    var d = attendanceDays[j];
+                    var isC = checkins[d] ? true : false;
+                    var st = isC ? '✓ 已打卡' : '✗ 未打卡';
+                    var sc = isC ? 'status-checked' : 'status-missing';
+                    var ab = isAdmin ? `<button onclick="deleteAttendance('${d}')" style="margin-left:10px; padding:4px 10px; border:none; border-radius:4px; background:#ffe6e6; color:red; cursor:pointer; font-size:12px;">删除</button>` : '';
+                    lh += `<div class="attendance-list-item"><div class="attendance-date">📅 ${d}</div><div><span class="attendance-status ${sc}">${st}</span>${ab}</div></div>`;
+                }
+            }
+            document.getElementById('attendanceList').innerHTML = lh;
+        }
+        function deleteAttendance(dateStr) {
+            myConfirm("确定要删除「" + dateStr + "」的考勤吗？", function(ok) {
+                if (!ok) return;
+                var nd = [];
+                for (var i = 0; i < attendanceDays.length; i++) if (attendanceDays[i] !== dateStr) nd.push(attendanceDays[i]);
+                attendanceDays = nd; saveAttendanceDays(); renderAttendance();
+            });
+        }
+
+        // ============ 公告通知 ============
+        function openAnnounce() {
+            document.getElementById('pageAnnounce').style.display = 'block';
+            document.getElementById('announceInput').value = '';
+            renderAnnounces();
+        }
+        function renderAnnounces() {
+            var html = "";
+            for (var i = 0; i < announces.length; i++) {
+                var a = announces[i];
+                var canEdit = isAdmin || (a.creator === currentUser);
+                var btns = "";
+                if (canEdit) {
+                    btns = `<div style="margin-top:10px; text-align:right;">
+                        <button onclick="editAnnounce(${a.id})">编辑</button>
+                        <button onclick="deleteAnnounce(${a.id})" style="color:red;">删除</button>
+                    </div>`;
+                }
+                html += `<div class="task-card" style="margin-bottom:15px;">
+                    <div class="notice-content">${a.content}</div>
+                    <div class="notice-meta">发布者：${a.creator}</div>
+                    ${btns}
+                </div>`;
+            }
+            if (announces.length === 0) html = "<div style='text-align:center; color:#888; padding:20px;'>暂无公告</div>";
+            document.getElementById('announceList').innerHTML = html;
+        }
+        function publishAnnounce() {
+            var content = document.getElementById('announceInput').value.trim();
+            if (!content) { showInfo("请输入公告内容！"); return; }
+            announces.push({ id: Date.now(), content: content, creator: currentUser });
+            saveAnnounces();
+            document.getElementById('announceInput').value = '';
+            renderAnnounces();
+        }
+        function editAnnounce(id) {
+            var a = null;
+            for (var i = 0; i < announces.length; i++) if (announces[i].id === id) { a = announces[i]; break; }
+            if (!a) return;
+            if (!(isAdmin || a.creator === currentUser)) { showInfo("你没有权限编辑这条公告！"); return; }
+            myPrompt("修改公告内容：", a.content, function(nc) {
+                if (nc === null || nc.trim() === '') return;
+                a.content = nc.trim();
+                saveAnnounces(); renderAnnounces();
+            });
+        }
+        function deleteAnnounce(id) {
+            var a = null;
+            for (var i = 0; i < announces.length; i++) if (announces[i].id === id) { a = announces[i]; break; }
+            if (!a) return;
+            if (!(isAdmin || a.creator === currentUser)) { showInfo("你没有权限删除这条公告！"); return; }
+            myConfirm("确定要删除这条公告吗？", function(ok) {
+                if (!ok) return;
+                var na = [];
+                for (var i = 0; i < announces.length; i++) if (announces[i].id !== id) na.push(announces[i]);
+                announces = na; saveAnnounces(); renderAnnounces();
+            });
+        }
+
+        // ============ 问卷调研 ============
+        function openSurvey() {
+            document.getElementById('pageSurvey').style.display = 'block';
+            document.getElementById('adminDivSurvey').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('createSurvey').style.display = 'none';
+            document.getElementById('sCount').value = '';
+            document.getElementById('surveyInputs').innerHTML = '';
+            renderSurvey();
+        }
+        function showCreateSurvey() { document.getElementById('createSurvey').style.display = 'block'; }
+        function makeSurveys() {
+            var c = parseInt(document.getElementById('sCount').value);
+            var html = "";
+            for (var i = 1; i <= c; i++) html += `<h4>题目 ${i}</h4><input type="text" class="sDesc" placeholder="题目描述"><input type="text" class="sAns" placeholder="正确答案">`;
+            document.getElementById('surveyInputs').innerHTML = html;
+        }
+        function addSurvey() {
+            var c = parseInt(document.getElementById('sCount').value);
+            if (!c || c <= 0) { showInfo("请输入有效题数！"); return; }
+            var des = document.querySelectorAll('.sDesc');
+            var ans = document.querySelectorAll('.sAns');
+            for (var i = 0; i < c; i++) {
+                if (!des[i].value.trim() || !ans[i].value.trim()) { showInfo("请把题目填写完整！"); return; }
+                surveys.push({name: des[i].value.trim(), answer: ans[i].value.trim()});
+            }
+            saveSurveys();
+            document.getElementById('sCount').value = '';
+            document.getElementById('surveyInputs').innerHTML = '';
+            document.getElementById('createSurvey').style.display = 'none';
+            renderSurvey(); updateGPA();
+        }
+        function renderSurvey() {
+            var html = "";
+            for (var i = 0; i < surveys.length; i++) {
+                var done = scores['survey_'+i] ? '✅' : '❌';
+                var btn = "";
+                if (isAdmin) btn = `<div style="margin-top:10px; text-align:right;"><button onclick="editSurvey(${i})">编辑</button> <button onclick="delSurvey(${i})" style="color:red;">删除</button></div>`;
+                html += `<div class="task-card"><div class="task-title"><span class="task-status">${done}</span>${surveys[i].name}</div><div class="input-group"><input type="text" id="sin_${i}"><button onclick="subSurvey(${i})">提交</button></div>${btn}</div>`;
+            }
+            document.getElementById('surveyList').innerHTML = html;
+        }
+        function subSurvey(index) {
+            var input = document.getElementById('sin_' + index);
+            var val = input.value.trim();
+            if (val === '') return;
+            var key = 'survey_' + index;
+            if (!stats[key]) stats[key] = {total: 0, correct: 0};
+            stats[key].total += 1;
+            if (val === surveys[index].answer) { scores[key] = true; stats[key].correct += 1; saveScores(); }
+            saveStats();
+            input.value = '';
+            renderSurvey(); updateGPA();
+        }
+        function editSurvey(index) {
+            myPrompt("修改题目：", surveys[index].name, function(n) {
+                if (n === null || n.trim() === '') return;
+                myPrompt("修改正确答案：", surveys[index].answer, function(a) {
+                    if (a === null || a.trim() === '') return;
+                    surveys[index].name = n.trim(); surveys[index].answer = a.trim();
+                    saveSurveys();
+                    renderSurvey();
+                });
+            });
+        }
+        function delSurvey(index) {
+            myConfirm("确定要删除「" + surveys[index].name + "」吗？", function(ok) {
+                if (!ok) return;
+                surveys.splice(index, 1);
+                saveSurveys();
+                var ns = {};
+                for (var key in scores) {
+                    if (key.indexOf('survey_') !== 0) { ns[key] = scores[key]; continue; }
+                    var k = parseInt(key.split('_')[1]);
+                    if (k < index) ns['survey_'+k] = true;
+                    if (k > index) ns['survey_'+(k-1)] = true;
+                }
+                scores = ns; saveScores();
+                var nst = {};
+                for (var key2 in stats) {
+                    if (key2.indexOf('survey_') !== 0) { nst[key2] = stats[key2]; continue; }
+                    var k2 = parseInt(key2.split('_')[1]);
+                    if (k2 < index) nst['survey_'+k2] = stats[key2];
+                    if (k2 > index) nst['survey_'+(k2-1)] = stats[key2];
+                }
+                stats = nst; saveStats();
+                renderSurvey(); updateGPA();
+            });
+        }
+    </script>
+</body>
+</html>
